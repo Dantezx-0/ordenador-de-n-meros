@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ordenador de Números | Bubble Sort & Quick Sort</title>
+  <meta name="description" content="Aplicação web interativa para ordenação de números utilizando algoritmos Bubble Sort e Quick Sort em Vanilla JS.">
+
+  <style>
+    /* ==========================================================================
+       Variáveis de Design e Paleta de Cores (Mobile First & Modern UI)
+       ========================================================================== */
+    :root {
+      --primary-900: #0f172a;
+      --primary-800: #1e293b;
+      --primary-700: #1e3a8a;
+      --primary-600: #2563eb;
+      --primary-500: #3b82f6;
+      --primary-100: #dbeafe;
+      --primary-50: #eff6ff;
+
+      --gray-900: #0f172a;
+      --gray-700: #334155;
+      --gray-500: #64748b;
+      --gray-300: #cbd5e1;
+      --gray-200: #e2e8f0;
+      --gray-100: #f1f5f9;
+      --gray-50: #f8fafc;
+
+      --success-600: #16a34a;
+      --danger-600: #dc2626;
+      --danger-50: #fef2f2;
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+
+      --transition-fast: 150ms ease;
+      --transition-normal: 250ms ease;
+    }
+
+    /* Reset e Base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--gray-50);
+      color: var(--gray-900);
+      line-height: 1.5;
+      padding: 1.25rem 1rem 3rem 1rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 820px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      padding: 1rem 0 0.5rem 0;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.85rem;
+      background-color: var(--primary-100);
+      color: var(--primary-700);
+      border-radius: var(--radius-full);
+      font-size: 0.775rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--primary-900);
+      letter-spacing: -0.025em;
+      margin-bottom: 0.35rem;
+    }
+
+    header p {
+      color: var(--gray-500);
+      font-size: 0.95rem;
+      max-width: 580px;
+      margin: 0 auto;
+    }
+
+    /* Card Principal */
+    .card {
+      background: #ffffff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* Formulário */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .label-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--primary-800);
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      font-size: 1rem;
+      font-family: inherit;
+      color: var(--gray-900);
+      background-color: var(--gray-50);
+      border: 1.5px solid var(--gray-300);
+      border-radius: var(--radius-md);
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+      outline: none;
+    }
+
+    input[type="text"]:focus {
+      background-color: #ffffff;
+      border-color: var(--primary-600);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+    }
+
+    input[type="text"].input-error {
+      border-color: var(--danger-600);
+      background-color: var(--danger-50);
+    }
+
+    .input-hint {
+      font-size: 0.8rem;
+      color: var(--gray-500);
+      margin-top: 0.35rem;
+    }
+
+    .error-msg {
+      color: var(--danger-600);
+      font-size: 0.825rem;
+      font-weight: 500;
+      margin-top: 0.35rem;
+      display: none;
+    }
+
+    .error-msg.visible {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    /* Ações Rápidas */
+    .quick-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-secondary {
+      background-color: var(--gray-100);
+      color: var(--gray-700);
+      border: 1px solid var(--gray-300);
+      padding: 0.5rem 0.85rem;
+      font-size: 0.825rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all var(--transition-fast);
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--gray-200);
+      color: var(--gray-900);
+      border-color: var(--gray-400);
+      transform: translateY(-1px);
+    }
+
+    /* Grid de Opções */
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+    }
+
+    @media (min-width: 600px) {
+      .controls-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .options-box {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .options-box legend {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--primary-800);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .custom-radio {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem 0.85rem;
+      border: 1px solid var(--gray-200);
+      background-color: #ffffff;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      user-select: none;
+    }
+
+    .custom-radio:hover {
+      border-color: var(--primary-500);
+      background-color: var(--primary-50);
+    }
+
+    .custom-radio input[type="radio"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 1.15rem;
+      height: 1.15rem;
+      border: 2px solid var(--gray-400);
+      border-radius: 50%;
+      outline: none;
+      cursor: pointer;
+      display: grid;
+      place-content: center;
+      flex-shrink: 0;
+      transition: border-color var(--transition-fast);
+    }
+
+    .custom-radio input[type="radio"]::before {
+      content: "";
+      width: 0.55rem;
+      height: 0.55rem;
+      border-radius: 50%;
+      background-color: var(--primary-600);
+      transform: scale(0);
+      transition: transform var(--transition-fast);
+    }
+
+    .custom-radio input[type="radio"]:checked {
+      border-color: var(--primary-600);
+    }
+
+    .custom-radio input[type="radio"]:checked::before {
+      transform: scale(1);
+    }
+
+    .custom-radio:has(input[type="radio"]:checked) {
+      border-color: var(--primary-600);
+      background-color: var(--primary-50);
+      box-shadow: 0 0 0 1px var(--primary-600);
+    }
+
+    .radio-label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--gray-800);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .radio-desc {
+      font-size: 0.75rem;
+      color: var(--gray-500);
+      font-weight: normal;
+    }
+
+    /* Botão Principal */
+    .btn-primary {
+      width: 100%;
+      padding: 1rem 1.5rem;
+      background: linear-gradient(135deg, var(--primary-700), var(--primary-600));
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.65rem;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+      transition: all var(--transition-normal);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, var(--primary-800), var(--primary-700));
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.45);
+      transform: translateY(-2px);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    }
+
+    /* Resultados */
+    .results-container {
+      display: none;
+      flex-direction: column;
+      gap: 1.25rem;
+      animation: fadeIn 300ms ease;
+    }
+
+    .results-container.visible {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Painel de Métricas */
+    .metrics-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .metric-card {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      padding: 0.85rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .metric-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--gray-500);
+    }
+
+    .metric-value {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--primary-700);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Listas Visuais */
+    .list-card {
+      background: #ffffff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      padding: 1.15rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--gray-100);
+      padding-bottom: 0.5rem;
+    }
+
+    .list-title {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--primary-900);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .copy-btn {
+      background: none;
+      border: none;
+      color: var(--primary-600);
+      font-size: 0.775rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: var(--radius-sm);
+      transition: background-color var(--transition-fast);
+    }
+
+    .copy-btn:hover {
+      background-color: var(--primary-100);
+    }
+
+    .numbers-flow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      max-height: 240px;
+      overflow-y: auto;
+      padding: 0.25rem 0;
+    }
+
+    .number-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.35rem 0.75rem;
+      border-radius: var(--radius-full);
+      font-size: 0.875rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      background-color: var(--gray-100);
+      color: var(--gray-800);
+      border: 1px solid var(--gray-200);
+      transition: transform var(--transition-fast);
+    }
+
+    .number-pill:hover {
+      transform: scale(1.08);
+    }
+
+    .number-pill.sorted {
+      background-color: var(--primary-50);
+      color: var(--primary-700);
+      border-color: var(--primary-100);
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 0.825rem;
+      color: var(--gray-500);
+    }
+
+    .icon {
+      width: 1em;
+      height: 1em;
+      fill: currentColor;
+      display: inline-block;
+      vertical-align: -0.15em;
+    }
+  </style>
+</head>
+<body>
+
+  <main class="container">
+    <!-- Cabeçalho -->
+    <header>
+      <div class="badge">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        Single Page Application • Vanilla JS
+      </div>
+      <h1>Ordenador de Números</h1>
+      <p>Compare algoritmos de ordenação, analise passos, comparações e tempos de resposta em tempo real.</p>
+    </header>
+
+    <!-- Formulário e Configurações -->
+    <section class="card" aria-label="Painel de Controle e Entrada">
+      <!-- Entrada de Dados -->
+      <div class="form-group">
+        <div class="label-header">
+          <label for="numbersInput">Números para ordenação:</label>
+          <div class="quick-actions">
+            <button type="button" class="btn-secondary" id="btnRandom">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
+              Gerar Aleatórios
+            </button>
+            <button type="button" class="btn-secondary" id="btnClear">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+              Limpar
+            </button>
+          </div>
+        </div>
+
+        <div class="input-wrapper">
+          <input 
+            type="text" 
+            id="numbersInput" 
+            placeholder="Ex: 45, 12, 89, 3, 27, -5, 18, 0" 
+            autocomplete="off"
+            spellcheck="false"
+          >
+          <span class="input-hint">Separe os números utilizando vírgula (aceita números positivos, negativos e decimais).</span>
+          <div class="error-msg" id="inputError">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+            <span id="errorText">Por favor, insira números válidos separados por vírgula.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Configurações: Algoritmo e Sentido -->
+      <div class="controls-grid">
+        <!-- Escolha do Algoritmo -->
+        <fieldset class="options-box">
+          <legend>Algoritmo de Ordenação</legend>
+          <div class="radio-group">
+            <label class="custom-radio">
+              <input type="radio" name="algorithm" value="quickSort" checked>
+              <div class="radio-label">
+                <span>Quick Sort</span>
+                <span class="radio-desc">Divisão e conquista (rápido para grandes listas - O(n log n))</span>
+              </div>
+            </label>
+
+            <label class="custom-radio">
+              <input type="radio" name="algorithm" value="bubbleSort">
+              <div class="radio-label">
+                <span>Bubble Sort</span>
+                <span class="radio-desc">Comparações adjacentes simples (didático - O(n²))</span>
+              </div>
+            </label>
+          </div>
+        </fieldset>
+
+        <!-- Sentido da Ordenação -->
+        <fieldset class="options-box">
+          <legend>Sentido da Ordenação</legend>
+          <div class="radio-group">
+            <label class="custom-radio">
+              <input type="radio" name="direction" value="asc" checked>
+              <div class="radio-label">
+                <span>Crescente (▲)</span>
+                <span class="radio-desc">Do menor valor para o maior valor</span>
+              </div>
+            </label>
+
+            <label class="custom-radio">
+              <input type="radio" name="direction" value="desc">
+              <div class="radio-label">
+                <span>Decrescente (▼)</span>
+                <span class="radio-desc">Do maior valor para o menor valor</span>
+              </div>
+            </label>
+          </div>
+        </fieldset>
+      </div>
+
+      <!-- Botão de Ação -->
+      <button type="button" class="btn-primary" id="btnSort">
+        <svg class="icon" viewBox="0 0 24 24" style="font-size: 1.25rem;"><path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/></svg>
+        Ordenar Números
+      </button>
+    </section>
+
+    <!-- Seção de Resultados -->
+    <section class="card results-container" id="resultsSection" aria-live="polite" aria-label="Resultados da Ordenação">
+      <!-- Painel de Métricas de Desempenho -->
+      <div class="metrics-panel">
+        <div class="metric-card">
+          <span class="metric-title">Tempo de Execução</span>
+          <span class="metric-value" id="metricTime">0.00 ms</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-title">Comparações</span>
+          <span class="metric-value" id="metricComparisons">0</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-title">Trocas Realizadas</span>
+          <span class="metric-value" id="metricSwaps">0</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-title">Total de Elementos</span>
+          <span class="metric-value" id="metricTotal">0</span>
+        </div>
+      </div>
+
+      <!-- Lista Ordenada -->
+      <div class="list-card">
+        <div class="list-header">
+          <span class="list-title">
+            <svg class="icon" style="color: var(--success-600);" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            Lista Perfeitamente Ordenada:
+          </span>
+          <button type="button" class="copy-btn" id="btnCopySorted">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+            <span id="copyText">Copiar</span>
+          </button>
+        </div>
+        <div class="numbers-flow" id="sortedNumbersFlow"></div>
+      </div>
+
+      <!-- Lista Original -->
+      <div class="list-card">
+        <div class="list-header">
+          <span class="list-title">
+            <svg class="icon" style="color: var(--gray-500);" viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+            Lista Original Inserida:
+          </span>
+        </div>
+        <div class="numbers-flow" id="originalNumbersFlow"></div>
+      </div>
+    </section>
+
+    <!-- Rodapé -->
+    <footer>
+      Desenvolvido com Vanilla JS & CSS • Pronto para GitHub Pages
+    </footer>
+  </main>
+
+  <!-- ==========================================================================
+       Lógica da Aplicação (JavaScript Puro)
+       ========================================================================== -->
+  <script>
+    (function () {
+      "use strict";
+
+      // Elementos do DOM
+      const input = document.getElementById("numbersInput");
+      const btnRandom = document.getElementById("btnRandom");
+      const btnClear = document.getElementById("btnClear");
+      const btnSort = document.getElementById("btnSort");
+      const inputError = document.getElementById("inputError");
+      const errorText = document.getElementById("errorText");
+      const resultsSection = document.getElementById("resultsSection");
+
+      const metricTime = document.getElementById("metricTime");
+      const metricComparisons = document.getElementById("metricComparisons");
+      const metricSwaps = document.getElementById("metricSwaps");
+      const metricTotal = document.getElementById("metricTotal");
+
+      const originalNumbersFlow = document.getElementById("originalNumbersFlow");
+      const sortedNumbersFlow = document.getElementById("sortedNumbersFlow");
+      const btnCopySorted = document.getElementById("btnCopySorted");
+      const copyText = document.getElementById("copyText");
+
+      let currentSortedArray = [];
+
+      /* ==========================================================================
+         Algoritmos de Ordenação
+         ========================================================================== */
+
+      /**
+       * Algoritmo Bubble Sort
+       * Compara pares de elementos adjacentes e os troca se estiverem fora de ordem.
+       */
+      function bubbleSort(arr, isAscending) {
+        const a = [...arr];
+        const n = a.length;
+        let comparisons = 0;
+        let swaps = 0;
+
+        for (let i = 0; i < n - 1; i++) {
+          let hasSwapped = false;
+          for (let j = 0; j < n - i - 1; j++) {
+            comparisons++;
+            const shouldSwap = isAscending 
+              ? a[j] > a[j + 1] 
+              : a[j] < a[j + 1];
+
+            if (shouldSwap) {
+              const temp = a[j];
+              a[j] = a[j + 1];
+              a[j + 1] = temp;
+              swaps++;
+              hasSwapped = true;
+            }
+          }
+          if (!hasSwapped) break;
+        }
+
+        return { sorted: a, comparisons, swaps };
+      }
+
+      /**
+       * Algoritmo Quick Sort (Lomuto Partition Scheme)
+       */
+      function quickSort(arr, isAscending) {
+        const a = [...arr];
+        let comparisons = 0;
+        let swaps = 0;
+
+        function partition(low, high) {
+          const pivot = a[high];
+          let i = low - 1;
+
+          for (let j = low; j < high; j++) {
+            comparisons++;
+            const condition = isAscending 
+              ? a[j] <= pivot 
+              : a[j] >= pivot;
+
+            if (condition) {
+              i++;
+              if (i !== j) {
+                const temp = a[i];
+                a[i] = a[j];
+                a[j] = temp;
+                swaps++;
+              }
+            }
+          }
+
+          if (i + 1 !== high) {
+            const temp = a[i + 1];
+            a[i + 1] = a[high];
+            a[high] = temp;
+            swaps++;
+          }
+
+          return i + 1;
+        }
+
+        function sort(low, high) {
+          if (low < high) {
+            const pi = partition(low, high);
+            sort(low, pi - 1);
+            sort(pi + 1, high);
+          }
+        }
+
+        sort(0, a.length - 1);
+        return { sorted: a, comparisons, swaps };
+      }
+
+      /* ==========================================================================
+         Funções Auxiliares e Validações
+         ========================================================================== */
+
+      function parseInput(rawString) {
+        const trimmed = rawString.trim();
+        if (!trimmed) {
+          return { error: "O campo não pode estar vazio. Digite números ou gere aleatórios." };
+        }
+
+        const tokens = trimmed.split(",").map(t => t.trim()).filter(t => t.length > 0);
+
+        if (tokens.length === 0) {
+          return { error: "Nenhum número válido foi identificado." };
+        }
+
+        const numbers = [];
+        for (let i = 0; i < tokens.length; i++) {
+          const token = tokens[i];
+          const num = Number(token);
+
+          if (isNaN(num)) {
+            return { error: `O valor "${token}" não é um número válido.` };
+          }
+          numbers.push(num);
+        }
+
+        return { numbers };
+      }
+
+      function showError(msg) {
+        errorText.textContent = msg;
+        inputError.classList.add("visible");
+        input.classList.add("input-error");
+      }
+
+      function clearError() {
+        inputError.classList.remove("visible");
+        input.classList.remove("input-error");
+      }
+
+      function renderNumberPills(container, numbers, isSorted = false) {
+        container.innerHTML = "";
+        const fragment = document.createDocumentFragment();
+
+        numbers.forEach(num => {
+          const pill = document.createElement("span");
+          pill.className = `number-pill ${isSorted ? "sorted" : ""}`;
+          pill.textContent = num;
+          fragment.appendChild(pill);
+        });
+
+        container.appendChild(fragment);
+      }
+
+      /* ==========================================================================
+         Manipulação de Eventos
+         ========================================================================== */
+
+      btnRandom.addEventListener("click", () => {
+        clearError();
+        const count = Math.floor(Math.random() * 8) + 8; // 8 a 15 números
+        const randomList = [];
+        for (let i = 0; i < count; i++) {
+          const val = Math.floor(Math.random() * 201) - 50; // -50 a 150
+          randomList.push(val);
+        }
+        input.value = randomList.join(", ");
+        input.focus();
+      });
+
+      btnClear.addEventListener("click", () => {
+        input.value = "";
+        clearError();
+        resultsSection.classList.remove("visible");
+        currentSortedArray = [];
+        input.focus();
+      });
+
+      input.addEventListener("input", () => {
+        if (inputError.classList.contains("visible")) {
+          clearError();
+        }
+      });
+
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          btnSort.click();
+        }
+      });
+
+      btnCopySorted.addEventListener("click", async () => {
+        if (!currentSortedArray.length) return;
+        const textToCopy = currentSortedArray.join(", ");
+        try {
+          await navigator.clipboard.writeText(textToCopy);
+          copyText.textContent = "Copiado!";
+          setTimeout(() => {
+            copyText.textContent = "Copiar";
+          }, 2000);
+        } catch (err) {
+          copyText.textContent = "Erro ao copiar";
+        }
+      });
+
+      btnSort.addEventListener("click", () => {
+        clearError();
+
+        const parseResult = parseInput(input.value);
+        if (parseResult.error) {
+          showError(parseResult.error);
+          return;
+        }
+
+        const originalNumbers = parseResult.numbers;
+        const selectedAlgorithm = document.querySelector('input[name="algorithm"]:checked').value;
+        const selectedDirection = document.querySelector('input[name="direction"]:checked').value;
+        const isAscending = selectedDirection === "asc";
+
+        // Medição de precisão de microssegundos
+        const startTime = performance.now();
+        let sortResult;
+
+        if (selectedAlgorithm === "quickSort") {
+          sortResult = quickSort(originalNumbers, isAscending);
+        } else {
+          sortResult = bubbleSort(originalNumbers, isAscending);
+        }
+
+        const endTime = performance.now();
+        const duration = (endTime - startTime).toFixed(4);
+
+        currentSortedArray = sortResult.sorted;
+
+        // Atualização de Métricas
+        metricTime.textContent = `${duration} ms`;
+        metricComparisons.textContent = sortResult.comparisons.toLocaleString("pt-BR");
+        metricSwaps.textContent = sortResult.swaps.toLocaleString("pt-BR");
+        metricTotal.textContent = originalNumbers.length.toLocaleString("pt-BR");
+
+        // Renderização Visual das Listas
+        renderNumberPills(originalNumbersFlow, originalNumbers, false);
+        renderNumberPills(sortedNumbersFlow, sortResult.sorted, true);
+
+        // Exibição dos Resultados
+        resultsSection.classList.add("visible");
+        resultsSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      });
+
+    })();
+  </script>
+</body>
+</html>
